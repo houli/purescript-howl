@@ -1,4 +1,28 @@
-module Audio.Howl where
+module Audio.Howl
+ ( HOWL
+ , Howlable
+ , Howl
+ , SpriteHowl
+ , class IsHowlable
+ , toHowl
+ , Sprite(..)
+ , AudioSource(..)
+ , Options
+ , defaultOptions
+ , new
+ , newSprite
+ , play
+ , playSprite
+ , pause
+ , stop
+ , mute
+ , unmute
+ , volume
+ , rate
+ , seek
+ , loop
+ , playing
+ ) where
 
 import Prelude
 
