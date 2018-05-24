@@ -1,6 +1,5 @@
 module Audio.Howl
- ( HOWL
- , Howlable
+ ( Howlable
  , Howl
  , SpriteHowl
  , class IsHowlable
@@ -26,14 +25,12 @@ module Audio.Howl
 
 import Prelude
 
-import Control.Monad.Eff (Eff, kind Effect)
 import Data.Array (fromFoldable)
 import Data.Newtype (class Newtype, unwrap)
 import Data.NonEmpty (NonEmpty)
-import Data.StrMap (StrMap)
+import Effect (Effect)
+import Foreign.Object (Object)
 import Unsafe.Coerce (unsafeCoerce)
-
-foreign import data HOWL :: Effect
 
 foreign import data Howlable :: Type
 foreign import data Howl :: Type
@@ -48,7 +45,7 @@ instance isHowlableHowl :: IsHowlable Howl where
 instance isHowlableSpriteHowl :: IsHowlable SpriteHowl where
   toHowl = unsafeCoerce
 
-newtype Sprite = Sprite (StrMap {start :: Int, end :: Int})
+newtype Sprite = Sprite (Object {start :: Int, end :: Int})
 derive instance newtypeSprite :: Newtype Sprite _
 
 newtype AudioSource = AudioSource (NonEmpty Array String)
@@ -73,49 +70,49 @@ defaultOptions =
   , pool: 5
   }
 
-foreign import newImpl :: forall eff. Array String -> Options -> Eff (howl :: HOWL | eff) Howl
-new :: forall eff. AudioSource -> Options -> Eff (howl :: HOWL | eff) Howl
+foreign import newImpl :: Array String -> Options -> Effect Howl
+new :: AudioSource -> Options -> Effect Howl
 new = newImpl <<< fromFoldable <<< unwrap
 
-foreign import newSpriteImpl :: forall eff. Array String -> StrMap (Array Int) -> Options -> Eff (howl :: HOWL | eff) SpriteHowl
-newSprite :: forall eff. AudioSource -> Sprite -> Options -> Eff (howl :: HOWL | eff) SpriteHowl
+foreign import newSpriteImpl :: Array String -> Object (Array Int) -> Options -> Effect SpriteHowl
+newSprite :: AudioSource -> Sprite -> Options -> Effect SpriteHowl
 newSprite as sprite = newSpriteImpl ((fromFoldable <<< unwrap) as) (map (\x -> [x.start, x.end]) (unwrap sprite))
 
-foreign import play :: forall eff. Howl -> Eff (howl :: HOWL | eff) Unit
-foreign import playSprite :: forall eff. SpriteHowl -> String -> Eff (howl :: HOWL | eff) Unit
+foreign import play :: Howl -> Effect Unit
+foreign import playSprite :: SpriteHowl -> String -> Effect Unit
 
-foreign import pauseImpl :: forall eff. Howlable -> Eff (howl :: HOWL | eff) Unit
-pause :: forall a eff. IsHowlable a => a -> Eff (howl :: HOWL | eff) Unit
+foreign import pauseImpl :: Howlable -> Effect Unit
+pause :: forall a. IsHowlable a => a -> Effect Unit
 pause = pauseImpl <<< toHowl
 
-foreign import stopImpl :: forall eff. Howlable -> Eff (howl :: HOWL | eff) Unit
-stop :: forall a eff. IsHowlable a => a -> Eff (howl :: HOWL | eff) Unit
+foreign import stopImpl :: Howlable -> Effect Unit
+stop :: forall a. IsHowlable a => a -> Effect Unit
 stop = stopImpl <<< toHowl
 
-foreign import muteImpl :: forall eff. Howlable -> Eff (howl :: HOWL | eff) Unit
-mute :: forall a eff. IsHowlable a => a -> Eff (howl :: HOWL | eff) Unit
+foreign import muteImpl :: Howlable -> Effect Unit
+mute :: forall a. IsHowlable a => a -> Effect Unit
 mute = muteImpl <<< toHowl
 
-foreign import unmuteImpl :: forall eff. Howlable -> Eff (howl :: HOWL | eff) Unit
-unmute :: forall a eff. IsHowlable a => a -> Eff (howl :: HOWL | eff) Unit
+foreign import unmuteImpl :: Howlable -> Effect Unit
+unmute :: forall a. IsHowlable a => a -> Effect  Unit
 unmute = unmuteImpl <<< toHowl
 
-foreign import volumeImpl :: forall eff. Howlable -> Number -> Eff (howl :: HOWL | eff) Unit
-volume :: forall a eff. IsHowlable a => a -> Number -> Eff (howl :: HOWL | eff) Unit
+foreign import volumeImpl :: Howlable -> Number -> Effect Unit
+volume :: forall a. IsHowlable a => a -> Number -> Effect Unit
 volume = volumeImpl <<< toHowl
 
-foreign import rateImpl :: forall eff. Howlable -> Number -> Eff (howl :: HOWL | eff) Unit
-rate :: forall a eff. IsHowlable a => a -> Number -> Eff (howl :: HOWL | eff) Unit
+foreign import rateImpl :: Howlable -> Number -> Effect Unit
+rate :: forall a. IsHowlable a => a -> Number -> Effect Unit
 rate = rateImpl <<< toHowl
 
-foreign import seekImpl :: forall eff. Howlable -> Number -> Eff (howl :: HOWL | eff) Unit
-seek :: forall a eff. IsHowlable a => a -> Number -> Eff (howl :: HOWL | eff) Unit
+foreign import seekImpl :: Howlable -> Number -> Effect Unit
+seek :: forall a. IsHowlable a => a -> Number -> Effect Unit
 seek = seekImpl <<< toHowl
 
-foreign import loopImpl :: forall eff. Howlable -> Boolean -> Eff (howl :: HOWL | eff) Unit
-loop :: forall a eff. IsHowlable a => a -> Boolean -> Eff (howl :: HOWL | eff) Unit
+foreign import loopImpl :: Howlable -> Boolean -> Effect Unit
+loop :: forall a. IsHowlable a => a -> Boolean -> Effect Unit
 loop = loopImpl <<< toHowl
 
-foreign import playingImpl :: forall eff. Howlable -> Eff (howl :: HOWL | eff) Boolean
-playing :: forall a eff. IsHowlable a => a -> Eff (howl :: HOWL | eff) Boolean
+foreign import playingImpl :: Howlable -> Effect Boolean
+playing :: forall a. IsHowlable a => a -> Effect Boolean
 playing = playingImpl <<< toHowl
